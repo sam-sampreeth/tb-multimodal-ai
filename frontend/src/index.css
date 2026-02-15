@@ -1,85 +1,94 @@
 @import "tailwindcss";
 
 @theme {
-  --color-background: #ffffff;
-  --color-foreground: #09090b;
+  --color-background: oklch(1 0 0);
+  --color-foreground: oklch(0.129 0.042 264.695);
 
-  --color-card: #ffffff;
-  --color-card-foreground: #09090b;
+  --color-card: oklch(1 0 0);
+  --color-card-foreground: oklch(0.129 0.042 264.695);
 
-  --color-popover: #ffffff;
-  --color-popover-foreground: #09090b;
+  --color-popover: oklch(1 0 0);
+  --color-popover-foreground: oklch(0.129 0.042 264.695);
 
-  --color-primary: #18181b;
-  --color-primary-foreground: #fafafa;
+  --color-primary: oklch(0.208 0.042 265.755);
+  --color-primary-foreground: oklch(0.984 0.003 247.858);
 
-  --color-secondary: #f4f4f5;
-  --color-secondary-foreground: #18181b;
+  --color-secondary: oklch(0.968 0.007 247.896);
+  --color-secondary-foreground: oklch(0.208 0.042 265.755);
 
-  --color-muted: #f4f4f5;
-  --color-muted-foreground: #71717a;
+  --color-muted: oklch(0.968 0.007 247.896);
+  --color-muted-foreground: oklch(0.554 0.046 257.417);
 
-  --color-accent: #f4f4f5;
-  --color-accent-foreground: #18181b;
+  --color-accent: oklch(0.968 0.007 247.896);
+  --color-accent-foreground: oklch(0.208 0.042 265.755);
 
-  --color-destructive: #ef4444;
-  --color-destructive-foreground: #fafafa;
+  --color-destructive: oklch(0.577 0.245 27.325);
+  --color-destructive-foreground: oklch(0.984 0.003 247.858);
 
-  --color-border: #e4e4e7;
-  --color-input: #e4e4e7;
-  --color-ring: #09090b;
+  --color-border: oklch(0.929 0.013 255.508);
+  --color-input: oklch(0.929 0.013 255.508);
+  --color-ring: oklch(0.704 0.04 256.788);
 
-  --radius-lg: 0.5rem;
-  --radius-md: calc(0.5rem - 2px);
-  --radius-sm: calc(0.5rem - 4px);
+  --radius-lg: 0.625rem;
+  --radius-md: calc(0.625rem - 2px);
+  --radius-sm: calc(0.625rem - 4px);
 
-  /* Medical specific variants mapped to neutral for black and white theme */
-  --color-success: #18181b;
-  --color-success-foreground: #fafafa;
-  --color-warning: #71717a;
-  --color-warning-foreground: #fafafa;
-  --color-danger: #ef4444;
-  --color-danger-foreground: #fafafa;
+  /* Medical specific variants */
+  --color-success: oklch(0.696 0.17 162.48);
+  --color-success-foreground: #ffffff;
 }
 
 [data-theme="dark"] {
-  --color-background: #09090b;
-  --color-foreground: #fafafa;
+  --color-background: oklch(0.129 0.042 264.695);
+  --color-foreground: oklch(0.984 0.003 247.858);
 
-  --color-card: #18181b;
-  --color-card-foreground: #fafafa;
+  --color-card: oklch(0.14 0.04 259.21);
+  --color-card-foreground: oklch(0.984 0.003 247.858);
 
-  --color-popover: #09090b;
-  --color-popover-foreground: #fafafa;
+  --color-popover: oklch(0.208 0.042 265.755);
+  --color-popover-foreground: oklch(0.984 0.003 247.858);
 
-  --color-primary: #fafafa;
-  --color-primary-foreground: #18181b;
+  --color-primary: oklch(0.929 0.013 255.508);
+  --color-primary-foreground: oklch(0.208 0.042 265.755);
 
-  --color-secondary: #27272a;
-  --color-secondary-foreground: #fafafa;
+  --color-secondary: oklch(0.279 0.041 260.031);
+  --color-secondary-foreground: oklch(0.984 0.003 247.858);
 
-  --color-muted: #27272a;
-  --color-muted-foreground: #a1a1aa;
+  --color-muted: oklch(0.279 0.041 260.031);
+  --color-muted-foreground: oklch(0.704 0.04 256.788);
 
-  --color-accent: #27272a;
-  --color-accent-foreground: #fafafa;
+  --color-accent: oklch(0.279 0.041 260.031);
+  --color-accent-foreground: oklch(0.984 0.003 247.858);
 
-  --color-destructive: #7f1d1d;
-  --color-destructive-foreground: #fafafa;
+  --color-destructive: oklch(0.704 0.191 22.216);
+  --color-destructive-foreground: oklch(0.208 0.042 265.755);
 
-  --color-border: #27272a;
-  --color-input: #27272a;
-  --color-ring: #d4d4d8;
+  --color-success: oklch(0.696 0.17 162.48);
+  --color-success-foreground: #ffffff;
+
+  --color-border: oklch(1 0 0 / 10%);
+  --color-input: oklch(1 0 0 / 15%);
+  --color-ring: oklch(0.551 0.027 264.364);
 }
 
 @layer base {
   * {
-    @apply border-border;
+    @apply border-border outline-ring/50;
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply min-h-svh w-full bg-background text-foreground;
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply tracking-tight;
   }
 }
 
