@@ -29,7 +29,8 @@ function App() {
               </ProtectedRoute>
             }
           >
-            <Route index element={<Dashboard />} />
+            <Route index element={<Navigate to="/dashboard" replace />} />
+            <Route path="dashboard" element={<Dashboard />} />
             <Route path="new-case" element={<NewCasePage />} />
             <Route path="history" element={<HistoryPage />} />
             <Route path="analytics" element={<div className="p-12 text-center text-muted-foreground">Analytics dashboard in development...</div>} />
