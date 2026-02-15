@@ -1,7 +1,8 @@
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
-import { GalleryVerticalEnd, Eye, EyeOff } from "lucide-react"
+import { GalleryVerticalEnd, Eye, EyeOff, Moon, Sun } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { useTheme } from "@/components/theme-provider"
 import { Button } from "@/components/ui/button"
 import {
     Card,
@@ -16,6 +17,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { toast } from "sonner"
 
 export default function LoginPage() {
+    const { theme, setTheme } = useTheme()
     const [view, setView] = useState<"login" | "forgot-password">("login")
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
@@ -27,7 +29,7 @@ export default function LoginPage() {
         e.preventDefault()
         if (email && password) {
             localStorage.setItem("isLoggedIn", "true")
-            navigate("/")
+            navigate("/dashboard")
         }
     }
 
@@ -53,7 +55,21 @@ export default function LoginPage() {
     }
 
     return (
-        <div className="flex min-h-svh flex-col items-center justify-center gap-6 bg-background p-6 md:p-10">
+        <div className="relative flex min-h-svh flex-col items-center justify-center gap-6 bg-background p-6 md:p-10">
+            <div className="absolute right-4 top-4">
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                >
+                    {theme === "dark" ? (
+                        <Sun className="h-5 w-5" />
+                    ) : (
+                        <Moon className="h-5 w-5" />
+                    )}
+                </Button>
+            </div>
+
             <div className="flex w-full max-w-sm flex-col gap-6">
                 <a href="#" className="flex items-center gap-2 self-center font-medium">
                     <div className="flex h-6 w-6 items-center justify-center rounded-md bg-primary text-primary-foreground">
