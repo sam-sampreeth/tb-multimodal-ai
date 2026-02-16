@@ -6,6 +6,7 @@ import Dashboard from "./pages/Dashboard"
 import LoginPage from "./pages/LoginPage"
 import NewCasePage from "./pages/NewCasePage"
 import HistoryPage from "./pages/HistoryPage"
+import ProfilePage from "./pages/ProfilePage"
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const isLoggedIn = localStorage.getItem("isLoggedIn") === "true"
@@ -35,7 +36,7 @@ function App() {
             <Route path="history" element={<HistoryPage />} />
             <Route path="analytics" element={<div className="p-12 text-center text-muted-foreground">Analytics dashboard in development...</div>} />
             <Route path="settings" element={<div className="p-12 text-center text-muted-foreground">Account settings in development...</div>} />
-            <Route path="profile" element={<div className="p-12 text-center text-muted-foreground">User profile in development...</div>} />
+            <Route path="profile" element={<ProfilePage />} />
           </Route>
         </Routes>
       </BrowserRouter>

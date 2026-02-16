@@ -29,6 +29,7 @@ export default function LoginPage() {
         e.preventDefault()
         if (email && password) {
             localStorage.setItem("isLoggedIn", "true")
+            localStorage.setItem("userEmail", email)
             navigate("/dashboard")
         }
     }
