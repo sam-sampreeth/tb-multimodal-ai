@@ -57,6 +57,7 @@ export interface PredictResponse {
   case_id: string;
   patient_id: string;
   timestamp: string;
+  patient: PatientIn;
   tb_detection: TBDetection;
   drug_resistance: DrugResistance;
   clinical_risk: ClinicalRisk;
@@ -76,6 +77,7 @@ export interface CaseSummary {
   dr_prediction: string;
   risk_band: string;
   district: string;
+  age: number;
 }
 
 export interface CaseListResponse {
@@ -106,6 +108,10 @@ export interface DashboardStats {
   by_district: DistrictStat[];
   by_week: WeeklyStat[];
   dr_breakdown: Record<string, number>;
+  gender_breakdown: Record<string, number>;
+  risk_breakdown: Record<string, number>;
+  zone_breakdown: Record<string, number>;
+  age_distribution: Record<string, number>;
 }
 
 export interface HealthResponse {

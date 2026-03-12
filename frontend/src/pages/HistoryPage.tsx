@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from "react"
 import { useSearchParams, useNavigate } from "react-router-dom"
-import { Card, CardContent, CardDescription } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { 
@@ -339,7 +339,7 @@ export default function HistoryPage() {
                                                 {visibleColumns.id && <td className="py-2 px-4 align-middle text-xs text-muted-foreground">{c.case_id}</td>}
                                                 {visibleColumns.name && <td className="py-2 px-4 align-middle text-xs font-medium">{c.patient_id}</td>}
                                                 {visibleColumns.doctor && <td className="py-2 px-4 align-middle text-muted-foreground text-xs">{c.district}</td>}
-                                                {visibleColumns.age && <td className="py-2 px-4 align-middle text-xs">24</td>}
+                                                {visibleColumns.age && <td className="py-2 px-4 align-middle text-xs">{c.age}</td>}
                                                 {visibleColumns.date && <td className="py-2 px-4 align-middle text-xs">{new Date(c.timestamp).toLocaleDateString()}</td>}
                                                 {visibleColumns.result && (
                                                     <td className="py-2 px-4 align-middle text-center">

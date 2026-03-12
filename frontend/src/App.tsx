@@ -9,6 +9,8 @@ import HistoryPage from "./pages/HistoryPage"
 import ProfilePage from "./pages/ProfilePage"
 import CaseDetailPage from "./pages/CaseDetailPage"
 
+import AnalyticsPage from "./pages/AnalyticsPage"
+
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const isLoggedIn = localStorage.getItem("isLoggedIn") === "true"
   if (!isLoggedIn) {
@@ -36,7 +38,7 @@ function App() {
             <Route path="new-case" element={<NewCasePage />} />
             <Route path="history" element={<HistoryPage />} />
             <Route path="history/:caseId" element={<CaseDetailPage />} />
-            <Route path="analytics" element={<div className="p-12 text-center text-muted-foreground">Analytics dashboard in development...</div>} />
+            <Route path="analytics" element={<AnalyticsPage />} />
             <Route path="settings" element={<div className="p-12 text-center text-muted-foreground">Account settings in development...</div>} />
             <Route path="profile" element={<ProfilePage />} />
           </Route>

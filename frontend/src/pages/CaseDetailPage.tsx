@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react"
 import { useParams, useNavigate } from "react-router-dom"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
@@ -8,18 +8,30 @@ import {
     Download, 
     ChevronLeft, 
     User, 
-    Calendar, 
     MapPin, 
     Activity, 
-    FileText, 
     AlertTriangle,
     CheckCircle2,
     ShieldAlert,
-    Loader2
+    Loader2,
+    Maximize2
 } from "lucide-react"
+import { 
+    Dialog, 
+    DialogContent, 
+    DialogHeader, 
+    DialogTitle,
+    DialogTrigger 
+} from "@/components/ui/dialog"
 import { cn } from "@/lib/utils"
 import { api } from "@/lib/api"
 import type { PredictResponse } from "@/types/api"
+
+const toSentenceCase = (str: string) => {
+    if (!str) return ""
+    const formatted = str.toLowerCase().replace(/_/g, " ")
+    return formatted.charAt(0).toUpperCase() + formatted.slice(1)
+}
 
 export default function CaseDetailPage() {
     const { caseId } = useParams<{ caseId: string }>()
@@ -121,35 +133,104 @@ export default function CaseDetailPage() {
                                 </Button>
                             </div>
                         </CardHeader>
-                        <CardContent className="p-0 bg-black aspect-square flex items-center justify-center relative min-h-[500px]">
-                            {activeXray === "original" && heatmap?.original_base64 && (
-                                <img 
-                                    src={`data:image/jpeg;base64,${heatmap.original_base64}`} 
-                                    className="h-full w-full object-contain" 
-                                    alt="Original Xray"
-                                />
-                            )}
-                            {activeXray === "heatmap" && heatmap?.heatmap_only_base64 && (
-                                <img 
-                                    src={`data:image/jpeg;base64,${heatmap.heatmap_only_base64}`} 
-                                    className="h-full w-full object-contain" 
-                                    alt="AI Heatmap"
-                                />
-                            )}
-                            {activeXray === "overlay" && heatmap?.overlay_base64 && (
-                                <img 
-                                    src={`data:image/jpeg;base64,${heatmap.overlay_base64}`} 
-                                    className="h-full w-full object-contain" 
-                                    alt="AI Overlay"
-                                />
-                            )}
+                        <CardContent className="p-0 bg-black flex items-center justify-center relative max-h-[450px] overflow-hidden group cursor-zoom-in">
+                            <Dialog>
+                                <DialogTrigger asChild>
+                                    <div className="w-full h-full flex items-center justify-center relative">
+                                        {activeXray === "original" && heatmap?.original_base64 && (
+                                            <img 
+                                                src={`data:image/jpeg;base64,${heatmap.original_base64}`} 
+                                                className="h-full w-full object-contain" 
+                                                alt="Original Xray"
+                                            />
+                                        )}
+                                        {activeXray === "heatmap" && heatmap?.heatmap_only_base64 && (
+                                            <img 
+                                                src={`data:image/jpeg;base64,${heatmap.heatmap_only_base64}`} 
+                                                className="h-full w-full object-contain" 
+                                                alt="AI Heatmap"
+                                            />
+                                        )}
+                                        {activeXray === "overlay" && heatmap?.overlay_base64 && (
+                                            <img 
+                                                src={`data:image/jpeg;base64,${heatmap.overlay_base64}`} 
+                                                className="h-full w-full object-contain" 
+                                                alt="AI Overlay"
+                                            />
+                                        )}
+                                        
+                                        <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                            <div className="bg-black/60 p-3 rounded-full backdrop-blur-md border border-white/20">
+                                                <Maximize2 className="h-6 w-6 text-white" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </DialogTrigger>
+                                <DialogContent className="max-w-5xl w-[95vw] h-[90vh] p-0 overflow-hidden bg-black border-none flex flex-col">
+                                    <DialogHeader className="p-4 bg-muted/10 border-b border-white/10 shrink-0 flex flex-row items-center justify-between">
+                                        <DialogTitle className="text-white flex items-center gap-2">
+                                            {toSentenceCase(activeXray)} view — Patient {data.patient_id}
+                                        </DialogTitle>
+                                        <div className="flex gap-2 mr-8">
+                                            <Button 
+                                                variant={activeXray === "original" ? "default" : "outline"} 
+                                                size="sm" 
+                                                className={cn(activeXray !== "original" && "text-white border-white/20 hover:bg-white/10")}
+                                                onClick={() => setActiveXray("original")}
+                                            >
+                                                Original
+                                            </Button>
+                                            <Button 
+                                                variant={activeXray === "heatmap" ? "default" : "outline"} 
+                                                size="sm" 
+                                                className={cn(activeXray !== "heatmap" && "text-white border-white/20 hover:bg-white/10")}
+                                                onClick={() => setActiveXray("heatmap")}
+                                            >
+                                                Heatmap
+                                            </Button>
+                                            <Button 
+                                                variant={activeXray === "overlay" ? "default" : "outline"} 
+                                                size="sm" 
+                                                className={cn(activeXray !== "overlay" && "text-white border-white/20 hover:bg-white/10")}
+                                                onClick={() => setActiveXray("overlay")}
+                                            >
+                                                Overlay
+                                            </Button>
+                                        </div>
+                                    </DialogHeader>
+                                    <div className="flex-1 w-full h-full relative flex items-center justify-center bg-black min-h-0 overflow-hidden">
+                                        {activeXray === "original" && heatmap?.original_base64 && (
+                                            <img 
+                                                src={`data:image/jpeg;base64,${heatmap.original_base64}`} 
+                                                className="w-full h-full object-contain select-none" 
+                                                alt="Original xray expanded"
+                                            />
+                                        )}
+                                        {activeXray === "heatmap" && heatmap?.heatmap_only_base64 && (
+                                            <img 
+                                                src={`data:image/jpeg;base64,${heatmap.heatmap_only_base64}`} 
+                                                className="w-full h-full object-contain select-none" 
+                                                alt="Ai heatmap expanded"
+                                            />
+                                        )}
+                                        {activeXray === "overlay" && heatmap?.overlay_base64 && (
+                                            <img 
+                                                src={`data:image/jpeg;base64,${heatmap.overlay_base64}`} 
+                                                className="w-full h-full object-contain select-none" 
+                                                alt="Ai overlay expanded"
+                                            />
+                                        )}
+                                    </div>
+                                </DialogContent>
+                            </Dialog>
+
                             {(!heatmap || !heatmap[`${activeXray}_base64` as keyof typeof heatmap]) && (
                                 <div className="flex flex-col items-center gap-2 text-muted-foreground">
                                     <Activity className="h-8 w-8 animate-pulse" />
                                     <p className="text-sm">Image analysis in progress or unavailable</p>
                                 </div>
                             )}
-                            <div className="absolute bottom-4 left-4 bg-black/60 backdrop-blur-md border border-white/10 px-3 py-1.5 rounded-full text-[10px] text-white/80 uppercase tracking-widest font-medium">
+                            <div className="absolute bottom-4 left-4 bg-black/60 backdrop-blur-md border border-white/10 px-3 py-1.5 rounded-full text-[10px] text-white/80 uppercase tracking-widest font-medium pointer-events-none">
                                 AI Analysis Support Layer
                             </div>
                         </CardContent>
@@ -194,7 +275,7 @@ export default function CaseDetailPage() {
                         tb_detection?.zone === "BORDERLINE" ? "border-t-amber-500" : "border-t-teal-500"
                     )}>
                         <CardHeader className="pb-2">
-                            <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wider">TB Detection Result</CardTitle>
+                            <CardTitle className="text-sm font-medium text-muted-foreground tracking-wider">Tb detection result</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-6">
                             <div className="flex flex-col gap-2">
@@ -208,19 +289,19 @@ export default function CaseDetailPage() {
                                         tb_detection.zone === "DETECTED" ? "bg-destructive/10 text-destructive border-destructive/20" : 
                                         tb_detection.zone === "BORDERLINE" ? "bg-amber-500/10 text-amber-600 border-amber-500/20" : "bg-teal-500/10 text-teal-600 border-teal-500/20"
                                     )}>
-                                        {tb_detection.zone.replace("_", " ")}
+                                        {toSentenceCase(tb_detection.zone)}
                                     </Badge>
                                 )}
                                 <p className="text-[10px] text-muted-foreground mt-1">
                                     Threshold used: {tb_detection?.threshold_used || "--"} ({tb_detection?.calibrated ? "Calibrated" : "Uncalibrated"})
                                 </p>
                             </div>
-
+ 
                             <Separator />
-
+ 
                             <div className="space-y-4">
                                 <div>
-                                    <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Drug Resistance Prediction</h4>
+                                    <h4 className="text-xs font-semibold tracking-wider text-muted-foreground mb-2">Drug resistance prediction</h4>
                                     <div className="flex items-center gap-2">
                                         <ShieldAlert className={cn(
                                             "h-5 w-5",
@@ -234,48 +315,48 @@ export default function CaseDetailPage() {
                                         </p>
                                     )}
                                 </div>
-
+ 
                                 <div>
-                                    <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Clinical Risk Band</h4>
+                                    <h4 className="text-xs font-semibold tracking-wider text-muted-foreground mb-2">Clinical risk band</h4>
                                     <Badge className={cn(
                                         "capitalize",
                                         clinical_risk.band === "HIGH" ? "bg-red-500/10 text-red-600" : 
                                         clinical_risk.band === "MEDIUM" ? "bg-orange-500/10 text-orange-600" : "bg-blue-500/10 text-blue-600"
                                     )}>
-                                        {clinical_risk.band} RISK (Score: {clinical_risk.score})
+                                        {toSentenceCase(clinical_risk.band)} risk (Score: {clinical_risk.score})
                                     </Badge>
                                 </div>
                             </div>
                         </CardContent>
                     </Card>
-
+ 
                     {/* Patient Information */}
                     <Card>
                         <CardHeader>
                             <CardTitle className="text-sm font-medium flex items-center gap-2">
                                 <User className="h-4 w-4 text-primary" />
-                                Patient Details
+                                Patient details
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
                             <div className="grid grid-cols-2 gap-y-4 text-sm">
                                 <div className="space-y-1">
-                                    <div className="text-[10px] text-muted-foreground uppercase">Patient ID</div>
+                                    <div className="text-[10px] text-muted-foreground">Patient id</div>
                                     <div className="font-mono bg-muted/50 px-2 py-0.5 rounded w-fit">{data.patient_id}</div>
                                 </div>
                                 <div className="space-y-1">
-                                    <div className="text-[10px] text-muted-foreground uppercase">Gender</div>
-                                    <div className="font-medium">Male</div>
+                                    <div className="text-[10px] text-muted-foreground">Gender</div>
+                                    <div className="font-medium capitalize">{data.patient.gender}</div>
                                 </div>
                                 <div className="space-y-1">
-                                    <div className="text-[10px] text-muted-foreground uppercase">Age</div>
-                                    <div className="font-medium">24 Years</div>
+                                    <div className="text-[10px] text-muted-foreground">Age</div>
+                                    <div className="font-medium">{data.patient.age} years</div>
                                 </div>
                                 <div className="space-y-1">
-                                    <div className="text-[10px] text-muted-foreground uppercase">District</div>
+                                    <div className="text-[10px] text-muted-foreground">District</div>
                                     <div className="font-medium flex items-center gap-1">
                                         <MapPin className="h-3 w-3" />
-                                        Bengaluru Urban
+                                        {data.patient.district || "Unknown"}
                                     </div>
                                 </div>
                             </div>
@@ -283,7 +364,7 @@ export default function CaseDetailPage() {
                             <Separator />
                             
                             <div className="space-y-3">
-                                <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Clinical Flags</h4>
+                                <h4 className="text-xs font-semibold tracking-wider text-muted-foreground">Clinical flags</h4>
                                 <div className="flex flex-wrap gap-1.5">
                                     {clinical_risk.factors.length > 0 ? (
                                         clinical_risk.factors.map(f => (
@@ -298,20 +379,20 @@ export default function CaseDetailPage() {
                             </div>
                         </CardContent>
                     </Card>
-
+ 
                     {/* Meta Information */}
                     <Card className="bg-muted/10">
                         <CardContent className="p-4 space-y-2">
                             <div className="flex items-center justify-between text-[10px]">
-                                <span className="text-muted-foreground uppercase tracking-widest">Model Version</span>
+                                <span className="text-muted-foreground tracking-widest">Model version</span>
                                 <span className="font-mono">{data.model_meta.model_version}</span>
                             </div>
                             <div className="flex items-center justify-between text-[10px]">
-                                <span className="text-muted-foreground uppercase tracking-widest">Processing Node</span>
+                                <span className="text-muted-foreground tracking-widest">Processing node</span>
                                 <span className="font-mono">{data.model_meta.device}</span>
                             </div>
                             <div className="flex items-center justify-between text-[10px]">
-                                <span className="text-muted-foreground uppercase tracking-widest">Validation AUC</span>
+                                <span className="text-muted-foreground tracking-widest">Validation AUC</span>
                                 <span className="font-mono">{data.model_meta.auc.toFixed(4)}</span>
                             </div>
                         </CardContent>

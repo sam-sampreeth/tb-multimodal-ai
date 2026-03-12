@@ -137,6 +137,7 @@ class CaseSummary(BaseModel):
     dr_prediction:  str
     risk_band:      str
     district:       str
+    age:            int
 
 
 class CaseListResponse(BaseModel):
@@ -169,6 +170,10 @@ class DashboardStats(BaseModel):
     by_district:       List[DistrictStat]
     by_week:           List[WeeklyStat]
     dr_breakdown:      Dict[str, int]
+    gender_breakdown:  Dict[str, int]
+    risk_breakdown:    Dict[str, int]
+    zone_breakdown:    Dict[str, int]
+    age_distribution:  Dict[str, int]  # e.g., "0-18", "19-45", "46-60", "60+"
 
 
 # ── ERROR ─────────────────────────────────────────────────────────────────────
