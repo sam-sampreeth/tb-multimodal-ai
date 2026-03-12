@@ -1,22 +1,38 @@
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
-import { ArrowUpRight } from "lucide-react"
+import { ArrowUpRight, Loader2 } from "lucide-react"
+import { useNavigate } from "react-router-dom"
 import {
     Tooltip,
     TooltipContent,
     TooltipProvider,
     TooltipTrigger,
 } from "@/components/ui/tooltip"
+import type { CaseSummary } from "@/types/api"
 
-const recentCases = [
-    { id: "#TB-2024-0156", name: "John Doe", result: "Positive", confidence: "92%", date: "Feb 15, 2026" },
-    { id: "#TB-2024-0157", name: "Jane Smith", result: "Negative", confidence: "98%", date: "Feb 14, 2026" },
-    { id: "#TB-2024-0158", name: "Robert Brown", result: "Positive", confidence: "85%", date: "Feb 13, 2026" },
-    { id: "#TB-2024-0159", name: "Emily Davis", result: "Negative", confidence: "95%", date: "Feb 12, 2026" },
-    { id: "#TB-2024-0160", name: "Michael J.", result: "Positive", confidence: "88%", date: "Feb 11, 2026" },
-]
+interface RecentPatientsProps {
+    cases: CaseSummary[]
+    isLoading?: boolean
+}
 
-export function RecentPatients() {
+export function RecentPatients({ cases, isLoading }: RecentPatientsProps) {
+    const navigate = useNavigate()
+    if (isLoading) {
+        return (
+            <div className="flex h-[200px] items-center justify-center">
+                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            </div>
+        )
+    }
+
+    if (!cases || cases.length === 0) {
+        return (
+            <div className="flex h-[150px] items-center justify-center text-sm text-muted-foreground">
+                No recent patients found.
+            </div>
+        )
+    }
+
     return (
         <div className="px-4 pb-4">
             <div className="rounded-lg border overflow-hidden">
@@ -31,32 +47,36 @@ export function RecentPatients() {
                             </tr>
                         </thead>
                         <tbody>
-                            {recentCases.map((c) => (
-                                <tr key={c.id} className="border-b last:border-0 transition-colors hover:bg-muted/40 group">
+                            {cases.map((c) => (
+                                <tr key={c.case_id} className="border-b last:border-0 transition-colors hover:bg-muted/40 group">
                                     <td className="py-2 px-4 align-middle">
-                                        <div className="font-medium text-sm">{c.name}</div>
-                                        <div className="text-[10px] text-muted-foreground">{c.id}</div>
+                                        <div className="font-medium text-sm">{c.patient_id}</div>
+                                        <div className="text-[10px] text-muted-foreground">{c.case_id}</div>
                                     </td>
                                     <td className="py-2 px-4 align-middle text-left">
                                         <Badge
                                             variant="outline"
                                             className={cn(
                                                 "rounded-md px-2 py-0.5 font-medium text-[10px] capitalize tracking-wide",
-                                                c.result === "Positive" && "bg-destructive/10 text-destructive dark:text-red-400 border-destructive/20",
-                                                c.result === "Negative" && "bg-teal-500/10 text-teal-600 dark:text-teal-400 border-teal-500/20"
+                                                c.tb_zone === "DETECTED" && "bg-destructive/10 text-destructive dark:text-red-400 border-destructive/20",
+                                                c.tb_zone === "NOT_DETECTED" && "bg-teal-500/10 text-teal-600 dark:text-teal-400 border-teal-500/20",
+                                                c.tb_zone === "BORDERLINE" && "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20"
                                             )}
                                         >
-                                            {c.result}
+                                            {c.tb_zone.replace("_", " ").toLowerCase()}
                                         </Badge>
                                     </td>
                                     <td className="py-2 px-4 align-middle text-left text-xs text-muted-foreground">
-                                        {c.date}
+                                        {new Date(c.timestamp).toLocaleDateString()}
                                     </td>
                                     <td className="py-2 px-4 align-middle text-right">
                                         <TooltipProvider>
                                             <Tooltip>
                                                 <TooltipTrigger asChild>
-                                                    <button className="inline-flex items-center justify-center rounded-md p-2 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors cursor-pointer">
+                                                    <button 
+                                                        onClick={() => navigate(`/history/${c.case_id}`)}
+                                                        className="inline-flex items-center justify-center rounded-md p-2 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors cursor-pointer"
+                                                    >
                                                         <ArrowUpRight className="h-4 w-4" />
                                                     </button>
                                                 </TooltipTrigger>

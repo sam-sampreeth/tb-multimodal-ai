@@ -1,6 +1,6 @@
-import { useState } from "react"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../components/ui/card"
-import { TrendingUp, TrendingDown, Download, ChevronRight } from "lucide-react"
+import { useState, useEffect } from "react"
+import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card"
+import { TrendingUp, TrendingDown, Download, ChevronRight, Loader2 } from "lucide-react"
 import { Area, AreaChart } from "recharts"
 import { Link } from "react-router-dom"
 import { ChartContainer, type ChartConfig } from "@/components/ui/chart"
@@ -9,6 +9,8 @@ import { Button } from "@/components/ui/button"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Overview } from "@/components/dashboard/overview"
 import { RecentPatients } from "@/components/dashboard/recent-patients"
+import { api } from "@/lib/api"
+import type { DashboardStats, CaseSummary } from "@/types/api"
 
 const chartConfig = {
     cases: {
@@ -25,52 +27,67 @@ const chartConfig = {
     },
 } satisfies ChartConfig
 
-const overviewData = {
-    "1d": [
-        { name: "00:00", total: 12 }, { name: "04:00", total: 8 }, { name: "08:00", total: 45 },
-        { name: "12:00", total: 82 }, { name: "16:00", total: 65 }, { name: "20:00", total: 34 }
-    ],
-    "30d": [
-        { name: "Week 1", total: 245 }, { name: "Week 2", total: 312 }, { name: "Week 3", total: 280 }, { name: "Week 4", total: 356 }
-    ],
-    "6m": [
-        { name: "Jan", total: 1200 }, { name: "Feb", total: 1560 }, { name: "Mar", total: 1340 },
-        { name: "Apr", total: 1800 }, { name: "May", total: 1650 }, { name: "Jun", total: 2100 }
-    ],
-    "1y": [
-        { name: "Jan", total: 1200 }, { name: "Feb", total: 1560 }, { name: "Mar", total: 1340 }, { name: "Apr", total: 1800 },
-        { name: "May", total: 1650 }, { name: "Jun", total: 2100 }, { name: "Jul", total: 1950 }, { name: "Aug", total: 2300 },
-        { name: "Sep", total: 2150 }, { name: "Oct", total: 2600 }, { name: "Nov", total: 2400 }, { name: "Dec", total: 2800 }
-    ]
-}
-
-const statsData = {
-    "1d": [
-        { title: "Total Cases", value: "42", trend: "+4", data: [{ value: 5 }, { value: 8 }, { value: 12 }, { value: 7 }, { value: 10 }] },
-        { title: "TB Positive", value: "3", trend: "-1", data: [{ value: 0 }, { value: 1 }, { value: 0 }, { value: 2 }, { value: 0 }] },
-        { title: "Avg. Confidence", value: "95.8%", trend: "+1.2%", data: [{ value: 92 }, { value: 94 }, { value: 96 }, { value: 95 }, { value: 97 }] }
-    ],
-    "30d": [
-        { title: "Total Cases", value: "1,284", trend: "+12.5%", data: [{ value: 400 }, { value: 300 }, { value: 500 }, { value: 450 }, { value: 600 }] },
-        { title: "TB Positive", value: "156", trend: "+15.2%", data: [{ value: 10 }, { value: 25 }, { value: 15 }, { value: 30 }, { value: 20 }] },
-        { title: "Avg. Confidence", value: "94.2%", trend: "+4.5%", data: [{ value: 85 }, { value: 88 }, { value: 92 }, { value: 90 }, { value: 95 }] }
-    ],
-    "6m": [
-        { title: "Total Cases", value: "8,432", trend: "+8.2%", data: [{ value: 1200 }, { value: 1500 }, { value: 1300 }, { value: 1800 }, { value: 1600 }] },
-        { title: "TB Positive", value: "942", trend: "+10.5%", data: [{ value: 80 }, { value: 120 }, { value: 95 }, { value: 150 }, { value: 130 }] },
-        { title: "Avg. Confidence", value: "93.5%", trend: "+2.1%", data: [{ value: 90 }, { value: 92 }, { value: 94 }, { value: 93 }, { value: 95 }] }
-    ],
-    "1y": [
-        { title: "Total Cases", value: "15,842", trend: "+15.4%", data: [{ value: 1000 }, { value: 1400 }, { value: 1800 }, { value: 2200 }, { value: 2600 }] },
-        { title: "TB Positive", value: "1,856", trend: "+12.8%", data: [{ value: 150 }, { value: 180 }, { value: 210 }, { value: 240 }, { value: 270 }] },
-        { title: "Avg. Confidence", value: "92.8%", trend: "+3.4%", data: [{ value: 88 }, { value: 90 }, { value: 92 }, { value: 93 }, { value: 95 }] }
-    ]
+const rangeToDays: Record<string, number> = {
+  "1d": 1,
+  "30d": 30,
+  "6m": 180,
+  "1y": 365,
 }
 
 export default function Dashboard() {
-    const [timeRange, setTimeRange] = useState("1d")
+    const [timeRange, setTimeRange] = useState("30d")
+    const [stats, setStats] = useState<DashboardStats | null>(null)
+    const [recentCases, setRecentCases] = useState<CaseSummary[]>([])
+    const [isLoading, setIsLoading] = useState(true)
 
-    const currentStats = statsData[timeRange as keyof typeof statsData]
+    useEffect(() => {
+        setIsLoading(true)
+        Promise.all([
+            api.getDashboardStats(rangeToDays[timeRange]),
+            api.getCases({ limit: 5 })
+        ])
+            .then(([statsData, casesData]) => {
+                setStats(statsData)
+                setRecentCases(casesData.cases)
+                setIsLoading(false)
+            })
+            .catch(err => {
+                console.error("Failed to fetch dashboard data", err)
+                setIsLoading(false)
+            })
+    }, [timeRange])
+
+    if (isLoading && !stats) {
+        return (
+            <div className="flex h-[400px] items-center justify-center">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+        )
+    }
+
+    // Map data for display
+    const currentStatsData = stats ? [
+        { 
+            title: "Total Cases", 
+            value: stats.total_cases.toLocaleString(), 
+            trend: "+0%", // Trend logic can be added to backend later
+            data: stats.by_week.map(w => ({ value: w.total }))
+        },
+        { 
+            title: "TB Positive", 
+            value: stats.tb_detected.toLocaleString(), 
+            trend: "+0%", 
+            data: stats.by_week.map(w => ({ value: w.tb_detected }))
+        },
+        { 
+            title: "Avg. Confidence", 
+            value: `${(stats.avg_probability * 100).toFixed(1)}%`, 
+            trend: "+0%", 
+            data: stats.by_week.map(() => ({ value: (stats.avg_probability * 100) })) // Minimal charting for confidence
+        }
+    ] : []
+
+    const overviewDataMap = stats?.by_week.map(w => ({ name: w.week, total: w.total })) || []
 
     return (
         <div className="space-y-6">
@@ -86,7 +103,7 @@ export default function Dashboard() {
                 </div>
             </div>
 
-            <Tabs defaultValue="1d" className="space-y-4" onValueChange={setTimeRange}>
+            <Tabs defaultValue="30d" className="space-y-4" onValueChange={setTimeRange}>
                 <TabsList>
                     <TabsTrigger value="1d">1 day</TabsTrigger>
                     <TabsTrigger value="30d">30 days</TabsTrigger>
@@ -95,7 +112,7 @@ export default function Dashboard() {
                 </TabsList>
 
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                    {currentStats.map((stat, index) => {
+                    {currentStatsData.map((stat, index) => {
                         const isIncrease = stat.trend.startsWith('+')
                         const isBadTrend =
                             (index === 0 && isIncrease) || // Total Cases increase = bad
@@ -107,7 +124,6 @@ export default function Dashboard() {
                             : "border border-foreground/50 bg-foreground/10 text-foreground"
 
                         const chartColor = "currentColor"
-
                         const kpiLinks = ["/history", "/history?result=Positive", "/history?sort=confidence"]
 
                         return (
@@ -133,7 +149,7 @@ export default function Dashboard() {
                                 <CardContent>
                                     <div className="text-2xl font-bold">{stat.value}</div>
                                     <p className="text-xs text-muted-foreground h-4">
-                                        {/* Row space for consistency */}
+                                        {isLoading && <span className="animate-pulse">Loading latest...</span>}
                                     </p>
                                     <div className={cn("h-[60px] w-full mt-2 min-h-0", isBadTrend ? "text-destructive" : "text-foreground")}>
                                         <ChartContainer config={chartConfig} className="h-full w-full aspect-auto">
@@ -167,7 +183,7 @@ export default function Dashboard() {
                             <CardTitle>Case Overview</CardTitle>
                         </CardHeader>
                         <CardContent className="pl-2">
-                            <Overview data={overviewData[timeRange as keyof typeof overviewData]} />
+                            <Overview data={overviewDataMap} />
                         </CardContent>
                     </Card>
                     <Card className="col-span-3 overflow-hidden">
@@ -175,7 +191,7 @@ export default function Dashboard() {
                             <CardTitle>Recent Patients</CardTitle>
                         </CardHeader>
                         <CardContent className="p-0">
-                            <RecentPatients />
+                            <RecentPatients cases={recentCases} isLoading={isLoading} />
                         </CardContent>
                     </Card>
                 </div>

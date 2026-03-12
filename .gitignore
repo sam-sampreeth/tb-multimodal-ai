@@ -28,3 +28,10 @@ frontend/dist-ssr/
 # Brain/Logs
 brain/
 .system_generated/
+
+# Database and Generated Media
+*.db
+heatmaps/
+check_db_paths.py
+create_test_case.py
+backend.log
