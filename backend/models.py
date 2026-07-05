@@ -3,7 +3,7 @@ models.py — SQLAlchemy ORM table definitions
 """
 from sqlalchemy import Column, String, Float, Integer, Boolean, Text, DateTime
 from sqlalchemy.sql import func
-from database import Base
+from backend.database import Base
 
 
 class Case(Base):

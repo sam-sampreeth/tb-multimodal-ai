@@ -23,19 +23,18 @@ _backend = os.path.dirname(os.path.abspath(__file__))
 _root    = os.path.dirname(_backend)
 _tb_sys  = os.path.join(_root, "tb_system")
 sys.path.insert(0, _root)
-sys.path.insert(0, _backend)
 sys.path.insert(0, _tb_sys)
 
-from database  import engine, get_db, Base
-from models    import Case
-from schemas   import (
+from backend.database  import engine, get_db, Base
+from backend.models    import Case
+from backend.schemas   import (
     PredictRequest, PredictResponse,
     CaseListResponse, CaseSummary,
     DashboardStats, DistrictStat, WeeklyStat,
     HealthResponse, ErrorResponse,
 )
-from inference import load_model, run_inference
-from tb_system.app.drug_resistance_form import DetailedPatient
+from backend.inference import load_model, run_inference
+from app.drug_resistance_form import DetailedPatient
 
 
 # ── App setup ─────────────────────────────────────────────────────────────────
@@ -137,9 +136,6 @@ def predict(request: PredictRequest, db: Session = Depends(get_db)):
         patient_json     = json.dumps(request.patient.dict()),
         model_version    = result["model_meta"]["model_version"],
         model_auc        = result["model_meta"]["auc"],
-        heatmap_original_path = result["heatmap_paths"]["original"],
-        heatmap_overlay_path  = result["heatmap_paths"]["overlay"],
-        heatmap_only_path     = result["heatmap_paths"]["heatmap"],
     )
     db.add(case)
     db.commit()
@@ -175,8 +171,6 @@ def list_cases(
     total  = q.count()
     cases  = q.order_by(Case.timestamp.desc()).offset((page - 1) * limit).limit(limit).all()
 
-    print(f"DEBUG: returning {len(cases)} cases, first age: {cases[0].age if cases else 'N/A'}")
-
     return CaseListResponse(
         cases = [CaseSummary(
             case_id        = c.case_id,
@@ -187,7 +181,6 @@ def list_cases(
             dr_prediction  = c.dr_prediction,
             risk_band      = c.risk_band,
             district       = c.district,
-            age            = c.age,
         ) for c in cases],
         total = total,
         page  = page,
@@ -230,20 +223,6 @@ def get_case(case_id: str, db: Session = Depends(get_db)):
             "model_version": case.model_version,
             "auc":           case.model_auc,
         },
-        "heatmap": _load_heatmap_b64(case),
-    }
-
-def _load_heatmap_b64(case):
-    import base64
-    def to_b64(path):
-        if not path or not os.path.exists(path): return ""
-        with open(path, "rb") as f:
-            return base64.b64encode(f.read()).decode()
-    
-    return {
-        "original_base64":     to_b64(case.heatmap_original_path),
-        "heatmap_only_base64": to_b64(case.heatmap_only_path),
-        "overlay_base64":      to_b64(case.heatmap_overlay_path),
     }
 
 
@@ -338,7 +317,6 @@ def get_patient_cases(patient_id: str, db: Session = Depends(get_db)):
             dr_prediction  = c.dr_prediction,
             risk_band      = c.risk_band,
             district       = c.district,
-            age            = c.age,
         ) for c in cases],
     }
 
@@ -405,46 +383,14 @@ def dashboard_stats(
     for c in cases:
         dr_map[c.dr_prediction] = dr_map.get(c.dr_prediction, 0) + 1
 
-    # Gender breakdown
-    gender_map: dict = {}
-    for c in cases:
-        g = c.gender or "Unknown"
-        gender_map[g] = gender_map.get(g, 0) + 1
-
-    # Risk breakdown
-    risk_map: dict = {}
-    for c in cases:
-        r = c.risk_band or "Unknown"
-        risk_map[r] = risk_map.get(r, 0) + 1
-
-    # Zone breakdown
-    zone_map: dict = {}
-    for c in cases:
-        z = c.tb_zone or "Unknown"
-        zone_map[z] = zone_map.get(z, 0) + 1
-
-    # Age distribution
-    age_map = {"0-18": 0, "19-35": 0, "36-50": 0, "51-65": 0, "65+": 0}
-    for c in cases:
-        if not c.age: continue
-        if c.age <= 18: age_map["0-18"] += 1
-        elif c.age <= 35: age_map["19-35"] += 1
-        elif c.age <= 50: age_map["36-50"] += 1
-        elif c.age <= 65: age_map["51-65"] += 1
-        else: age_map["65+"] += 1
-
     return DashboardStats(
-        total_cases      = total,
-        tb_detected      = tb_detected,
-        detection_rate   = round(tb_detected / total, 3) if total else 0.0,
-        avg_probability  = round(avg_prob, 3),
-        by_district      = by_district,
-        by_week          = by_week,
-        dr_breakdown     = dr_map,
-        gender_breakdown = gender_map,
-        risk_breakdown   = risk_map,
-        zone_breakdown   = zone_map,
-        age_distribution = age_map,
+        total_cases     = total,
+        tb_detected     = tb_detected,
+        detection_rate  = round(tb_detected / total, 3) if total else 0.0,
+        avg_probability = round(avg_prob, 3),
+        by_district     = by_district,
+        by_week         = by_week,
+        dr_breakdown    = dr_map,
     )
 
 
