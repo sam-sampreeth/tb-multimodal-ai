@@ -9,8 +9,12 @@ NexTB is a Tuberculosis detection system. It features a Python/FastAPI backend f
 - **`tb_system/`**: Core machine learning models, attention map generation (GradCAM++), and PDF report builders.
 
 ## Dataset
-Full dataset download:
-https://drive.google.com/file/d/1Mfe-U-pKej5b6jsUacfu1BEOH_fxu6ht/view?usp=sharing
+Dataset sources
+**VinDR-CXR:** https://physionet.org/content/vindr-cxr/1.0.0/
+* **Montgomery County CXR Set:** https://data.lhncbc.nlm.nih.gov/public/Tuberculosis-Chest-X-ray-Datasets/Montgomery-County-CXR-Set/MontgomerySet/
+* **Shenzhen Hospital CXR Set:** https://data.lhncbc.nlm.nih.gov/public/Tuberculosis-Chest-X-ray-Datasets/Shenzhen-Hospital-CXR-Set/
+* **TBX11K Dataset:** https://www.kaggle.com/datasets/usmanshams/tbx-11
+* **Delhi A/B (Mendeley):** https://data.mendeley.com/datasets/8j2g3csprk/2
 
 ---
 
